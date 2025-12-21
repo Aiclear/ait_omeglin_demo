@@ -43,7 +43,8 @@ public class OmeglinSchema {
                         user_code_x         varchar(255),
                         user_code_y         varchar(255),
                         proactive_user_code varchar(255),
-                        state               char(2),
+                        x_to_y_state        varchar(2),
+                        y_to_x_state        varchar(2),
                         create_at           timestamp,
                         update_at           timestamp,
                         unique (user_code_x, user_code_y)
