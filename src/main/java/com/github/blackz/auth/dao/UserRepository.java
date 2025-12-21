@@ -23,4 +23,13 @@ public class UserRepository {
                 .getSingleResultOrNull()
         );
     }
+
+    public static User findUserByUsername(String username) {
+        return AppHibernate.fromTransaction(session ->
+            session.createQuery(
+                    "select u from User u where u.username = :username", User.class)
+                .setParameter("username", username)
+                .getSingleResultOrNull()
+        );
+    }
 }
