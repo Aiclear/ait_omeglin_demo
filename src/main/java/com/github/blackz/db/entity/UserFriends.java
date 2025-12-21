@@ -24,14 +24,18 @@ public class UserFriends {
     private String userCodeY;
 
     /**
-     * 谁是主动发起的
+     * 谁是主动发起的好友申请
      */
     private String proactiveUserCode;
 
     /**
-     * 当前状态
+     * 1 正常 2 拉黑 当前好友状态
      */
-    private String state;
+    private String xToYState;
+    /**
+     * 1 正常 2 拉黑 当前好友状态
+     */
+    private String yToXState;
 
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
