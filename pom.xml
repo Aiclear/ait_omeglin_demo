@@ -16,6 +16,7 @@
     <maven.compiler.target>25</maven.compiler.target>
     <maven.compiler.source>25</maven.compiler.source>
 
+    <lombok.version>1.18.42</lombok.version>
     <javalin.version>6.7.0</javalin.version>
     <hibernate.version>7.2.0.Final</hibernate.version>
     <sqlite.version>3.51.1.0</sqlite.version>
@@ -58,7 +59,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.42</version>
+      <version>${lombok.version}</version>
     </dependency>
 
     <!-- orm -->
@@ -123,5 +124,26 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.14.1</version>
+        <configuration>
+          <source>25</source>
+          <target>25</target>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
