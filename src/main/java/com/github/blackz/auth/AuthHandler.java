@@ -10,6 +10,7 @@ import com.github.blackz.security.UserInformation;
 import io.javalin.http.Context;
 import io.javalin.http.Cookie;
 import io.javalin.http.SameSite;
+import java.time.LocalDateTime;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -28,8 +29,10 @@ public class AuthHandler {
     public static void register(@NotNull Context context) {
         User user = context.bodyAsClass(User.class);
         user.setCode(user.getEmail().split("@")[0]);
+        user.setCreatedAt(LocalDateTime.now());
 
         UserRepository.saveUser(user);
+        context.json(ResultDto.ok());
     }
 
     /**

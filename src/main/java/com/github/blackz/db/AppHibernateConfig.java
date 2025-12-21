@@ -22,7 +22,7 @@ public class AppHibernateConfig {
         settings.put(AvailableSettings.JAKARTA_JDBC_USER, "sa");
         settings.put(AvailableSettings.JAKARTA_JDBC_PASSWORD, "");
         settings.put(AvailableSettings.HIGHLIGHT_SQL, true);
-        settings.put(AvailableSettings.HBM2DDL_AUTO, Action.ACTION_CREATE);
+//        settings.put(AvailableSettings.HBM2DDL_AUTO, Action.ACTION_CREATE);
 
         configuration.setProperties(settings);
         configuration.addAnnotatedClass(User.class);
