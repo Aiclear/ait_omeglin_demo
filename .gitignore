@@ -28,3 +28,4 @@ replay_pid*
 /omeglin.iml
 .idea
 target
+.vscode

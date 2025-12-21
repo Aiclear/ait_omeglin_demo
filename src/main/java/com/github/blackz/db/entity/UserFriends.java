@@ -1,5 +1,6 @@
 package com.github.blackz.db.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -20,23 +21,32 @@ public class UserFriends {
     @Id
     private Long id;
 
+    @Column(name = "user_code_x")
     private String userCodeX;
+    
+    @Column(name = "user_code_y")
     private String userCodeY;
 
     /**
      * 谁是主动发起的好友申请
      */
+    @Column(name = "proactive_user_code")
     private String proactiveUserCode;
 
     /**
      * 1 正常 2 拉黑 当前好友状态
      */
+    @Column(name = "x_to_y_state")
     private String xToYState;
     /**
      * 1 正常 2 拉黑 当前好友状态
      */
+    @Column(name = "y_to_x_state")
     private String yToXState;
 
+    @Column(name = "create_at")
     private LocalDateTime createTime;
+    
+    @Column(name = "update_at")
     private LocalDateTime updateTime;
 }

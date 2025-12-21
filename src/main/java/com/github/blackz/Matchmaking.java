@@ -1,18 +1,39 @@
 package com.github.blackz;
 
+import com.github.blackz.friend.FriendRepository;
+import com.github.blackz.security.SecurityContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Matchmaking {
     private static final Logger logger = LoggerFactory.getLogger(Matchmaking.class);
     private static final ConcurrentLinkedQueue<Exchange> queue = new ConcurrentLinkedQueue<>();
+    private static final Map<WsContext, String> userCodeMap = new ConcurrentHashMap<>();
 
     public static void websocket(WsConfig ws) {
-        ws.onConnect(WsContext::enableAutomaticPings);
+        ws.onConnect(ctx -> {
+            ctx.enableAutomaticPings();
+            // 从WebSocket连接中获取用户信息
+            try {
+                String token = ctx.queryParam("token");
+                if (token != null) {
+                    // 这里需要从token或session中获取用户code
+                    // 暂时使用简单的用户标识
+                    String userCode = ctx.queryParam("userCode");
+                    if (userCode != null) {
+                        userCodeMap.put(ctx, userCode);
+                    }
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to get user info from WebSocket connection", e);
+            }
+        });
         ws.onClose(Matchmaking::pairingAbort);
         ws.onMessage(user -> {
             logger.info("Received message: {}", user.message());
@@ -21,6 +42,8 @@ public class Matchmaking {
                 case "PAIRING_START" -> pairingStart(user);
                 case "PAIRING_ABORT" -> pairingAbort(user);
                 case "PAIRING_DONE" -> pairingDone(user);
+                case "FRIEND_REQUEST" -> handleFriendRequest(user, message);
+                case "FRIEND_ACCEPT" -> handleFriendAccept(user, message);
                 case "SDP_OFFER", "SDP_ANSWER", "SDP_ICE_CANDIDATE" -> {
                     var exchange = findExchange(user);
                     if (exchange != null && exchange.a != null && exchange.b != null) {
@@ -54,6 +77,7 @@ public class Matchmaking {
             send(exchange.otherUser(user), new Message("PARTNER_LEFT"));
             queue.remove(exchange);
         }
+        userCodeMap.remove(user);
     }
 
     private static void pairingDone(WsContext user) {
@@ -69,6 +93,37 @@ public class Matchmaking {
                 .filter(ex -> user.equals(ex.a) || user.equals(ex.b))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private static void handleFriendRequest(WsContext user, Message message) {
+        var exchange = findExchange(user);
+        if (exchange != null && exchange.a != null && exchange.b != null) {
+            var otherUser = exchange.otherUser(user);
+            String fromUserCode = userCodeMap.get(user);
+            String toUserCode = userCodeMap.get(otherUser);
+            
+            if (fromUserCode != null && toUserCode != null) {
+                // 检查是否已经是好友
+                if (!FriendRepository.areFriends(fromUserCode, toUserCode)) {
+                    FriendRepository.createFriendRequest(fromUserCode, toUserCode);
+                    send(otherUser, new Message("FRIEND_REQUEST", fromUserCode));
+                }
+            }
+        }
+    }
+
+    private static void handleFriendAccept(WsContext user, Message message) {
+        var exchange = findExchange(user);
+        if (exchange != null && exchange.a != null && exchange.b != null) {
+            var otherUser = exchange.otherUser(user);
+            String acceptingUserCode = userCodeMap.get(user);
+            String requestingUserCode = userCodeMap.get(otherUser);
+            
+            if (acceptingUserCode != null && requestingUserCode != null) {
+                FriendRepository.acceptFriendRequest(requestingUserCode, acceptingUserCode);
+                send(otherUser, new Message("FRIEND_ACCEPTED", acceptingUserCode));
+            }
+        }
     }
 
     private static void send(WsContext user, Message message) { // null safe send method

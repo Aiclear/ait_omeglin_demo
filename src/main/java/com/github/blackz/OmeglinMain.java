@@ -5,6 +5,7 @@ import static io.javalin.apibuilder.ApiBuilder.post;
 
 import com.github.blackz.auth.AuthHandler;
 import com.github.blackz.db.OmeglinSchema;
+import com.github.blackz.friend.FriendHandler;
 import com.github.blackz.security.SecurityContext;
 import com.github.blackz.security.SecurityHandler;
 import com.github.blackz.user.UserHandler;
@@ -46,6 +47,12 @@ public class OmeglinMain {
                 // user
                 path("/api/user", () -> {
                     post("/userInfo", UserHandler::queryUserInfo);
+                });
+
+                // friends
+                path("/api/friends", () -> {
+                    post("/list", FriendHandler.getFriendsList);
+                    post("/pending", FriendHandler.getPendingRequests);
                 });
             });
 
