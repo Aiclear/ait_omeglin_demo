@@ -4,7 +4,10 @@ import com.github.blackz.db.entity.User;
 import com.github.blackz.auth.dao.UserRepository;
 import com.github.blackz.security.SecurityContext;
 import com.github.blackz.security.UserInformation;
+import com.github.blackz.friend.FriendsRepository;
 import io.javalin.http.Context;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 用户相关信息处理
@@ -28,6 +31,23 @@ public class UserHandler {
         user.setPassword(null);
 
         context.json(user);
+    }
+    
+    /**
+     * 获取当前用户的好友列表
+     */
+    public static void getFriendsList(Context ctx) {
+        UserInformation userInfo = SecurityContext.getContext();
+        if (userInfo != null) {
+            List<User> friends = FriendsRepository.getUserFriends(userInfo.getUserCode());
+            
+            // 移除密码信息，只返回安全的用户信息
+            friends.forEach(user -> user.setPassword(null));
+            
+            ctx.json(friends);
+        } else {
+            ctx.status(401).json(Map.of("error", "用户未登录"));
+        }
     }
 
 }

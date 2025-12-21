@@ -8,6 +8,8 @@ export class PeerConnection {
 
     constructor(options) {
         this.options = options;
+        // 添加handleWsMessage选项，用于处理好友相关的WebSocket消息
+        this.onWsMessage = options.onWsMessage || (() => {});
         this.init();
     }
 
@@ -27,12 +29,30 @@ export class PeerConnection {
         let protocol = window.location.protocol === "https:" ? "wss" : "ws";
         let ws = new WebSocket(`${protocol}://${window.location.host}/api/matchmaking`);
         ws.addEventListener("message", (event) => {
-            const message = JSON.parse(event.data);
-            console.log("Received WebSocket message", message.name)
-            if (message.name === "PARTNER_FOUND") this.handlePartnerFound(message.data);
-            if (message.name === "SDP_OFFER") this.handleSdpOffer(JSON.parse(message.data));
-            if (message.name === "SDP_ANSWER") this.handleSdpAnswer(JSON.parse(message.data));
-            if (message.name === "SDP_ICE_CANDIDATE") this.handleIceCandidate(JSON.parse(message.data));
+            // 尝试解析消息
+            try {
+                const message = JSON.parse(event.data);
+                console.log("Received WebSocket message", message.name)
+                
+                // 处理标准的WebRTC信令消息
+                if (message.name === "PARTNER_FOUND") {
+                    this.handlePartnerFound(message.data);
+                } else if (message.name === "SDP_OFFER") {
+                    this.handleSdpOffer(JSON.parse(message.data));
+                } else if (message.name === "SDP_ANSWER") {
+                    this.handleSdpAnswer(JSON.parse(message.data));
+                } else if (message.name === "SDP_ICE_CANDIDATE") {
+                    this.handleIceCandidate(JSON.parse(message.data));
+                } else if (message.name === "PARTNER_LEFT") {
+                    this.disconnect("REMOTE");
+                } else {
+                    // 将其他消息（如好友相关的消息）传递给回调处理
+                    this.onWsMessage(message);
+                }
+            } catch (e) {
+                // 如果解析失败，可能是文本消息，这里不做处理
+                console.log("Received non-JSON WebSocket message");
+            }
         });
         ws.addEventListener("close", async () => {
             while (this.sdpExchange.readyState === WebSocket.CLOSED) {

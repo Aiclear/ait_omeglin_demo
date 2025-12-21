@@ -5,8 +5,11 @@ import static io.javalin.apibuilder.ApiBuilder.post;
 
 import com.github.blackz.auth.AuthHandler;
 import com.github.blackz.db.OmeglinSchema;
+import com.github.blackz.db.entity.User;
+import com.github.blackz.auth.dao.UserRepository;
 import com.github.blackz.security.SecurityContext;
 import com.github.blackz.security.SecurityHandler;
+import com.github.blackz.security.UserInformation;
 import com.github.blackz.user.UserHandler;
 import io.javalin.Javalin;
 import io.javalin.http.HttpStatus;
@@ -46,12 +49,26 @@ public class OmeglinMain {
                 // user
                 path("/api/user", () -> {
                     post("/userInfo", UserHandler::queryUserInfo);
+                    post("/friendsList", UserHandler::getFriendsList);
                 });
             });
 
             // ws
             config.router.mount(router -> {
-                router.ws("/api/matchmaking", Matchmaking::websocket);
+                router.ws("/api/matchmaking", ws -> {
+                    // 在连接时存储用户code信息
+                    ws.onConnect(ctx -> {
+                        UserInformation userInfo = SecurityContext.getContext();
+                        if (userInfo != null) {
+                            String email = userInfo.getEmail();
+                            User user = UserRepository.findUserByEmail(email);
+                            if (user != null) {
+                                ctx.attribute("userCode", user.getCode());
+                            }
+                        }
+                        Matchmaking.websocket(ws);
+                    });
+                });
             });
         }).exception(Exception.class, (e, context) -> {
             // 处理 token过期的异常
