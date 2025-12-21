@@ -208,3 +208,68 @@ body:not([data-state=CONNECTED]) .chat-controls .messaging {
     grid-column-gap: var(--spacing);
   }
 }
+
+/* 好友请求按钮样式 */
+.friend-request-btn,
+.friend-accept-btn {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.friend-request-btn:hover,
+.friend-accept-btn:hover {
+    background-color: #45a049;
+}
+
+.friend-request-btn:disabled,
+.friend-accept-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.friend-accept-btn {
+    background-color: #2196F3;
+}
+
+.friend-accept-btn:hover {
+    background-color: #0b7dda;
+}
+
+/* 好友列表样式 */
+.friends-list {
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    padding: 10px 15px;
+    margin: 10px 0;
+}
+
+.friends-list h4 {
+    margin-top: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.friends-list ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.friends-list li {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.friends-list li:last-child {
+    border-bottom: none;
+}

@@ -2,6 +2,7 @@ package com.github.blackz.auth.dao;
 
 import com.github.blackz.db.AppHibernate;
 import com.github.blackz.db.entity.User;
+import java.util.List;
 
 /**
  * User 操作数据库的类
@@ -21,6 +22,24 @@ public class UserRepository {
                     "select u from User u where u.email = :email", User.class)
                 .setParameter("email", email)
                 .getSingleResultOrNull()
+        );
+    }
+
+    public static User findUserByCode(String code) {
+        return AppHibernate.fromTransaction(session ->
+            session.createQuery(
+                    "select u from User u where u.code = :code", User.class)
+                .setParameter("code", code)
+                .getSingleResultOrNull()
+        );
+    }
+
+    public static List<User> findUsersByCodes(List<String> codes) {
+        return AppHibernate.fromTransaction(session ->
+            session.createQuery(
+                    "select u from User u where u.code in :codes", User.class)
+                .setParameter("codes", codes)
+                .getResultList()
         );
     }
 }
