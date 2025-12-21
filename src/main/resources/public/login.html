@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <title>Omeglin</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="css/login_style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    .error-message {
+      width: 60%;
+      margin: 0 auto;
+      padding: 0 12px;
+      display: none;
+
+      & span {
+        color: red;
+        font-size: 0.7em;
+        font-weight: normal;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="main">
+  <input type="checkbox" id="chk" aria-hidden="true">
+
+  <div class="signup">
+    <form>
+      <label for="chk" aria-hidden="true">注 册</label>
+      <input type="text" name="username" placeholder="用户名" required="">
+      <input type="email" name="email" placeholder="邮箱" required="">
+      <input type="password" name="password" placeholder="密码" required="">
+      <div id="singUpErrorMsg" class="error-message"></div>
+      <button id="singUpBtn">注 册</button>
+    </form>
+  </div>
+
+  <div class="login">
+    <form>
+      <label for="chk" aria-hidden="true">登 录</label>
+      <input type="email" name="username" placeholder="邮箱" required="">
+      <input type="password" name="password" placeholder="密码" required="">
+      <div id="loginErrorMsg" class="error-message"></div>
+      <button id="loginBtn">登 录</button>
+    </form>
+  </div>
+</div>
+<script type="module">
+  import {formToObject, isOk, post} from '/js/util.js'
+
+  const chk = document.getElementById("chk")
+  const singUpBtn = document.getElementById("singUpBtn")
+  const singUpErrorMsg = document.getElementById("singUpErrorMsg")
+  const loginBtn = document.getElementById("loginBtn")
+  const loginErrorMsg = document.getElementById("loginErrorMsg")
+
+  // login request
+  loginBtn.addEventListener("click", async (e) => {
+    e.preventDefault()
+
+    let form = document.querySelector(".login form");
+    let jsonForm = formToObject(form);
+    let res = await post("/api/auth/token", jsonForm);
+    if (isOk(res)) {
+      // 保存用户信息
+      localStorage.setItem("user", JSON.stringify(res.data));
+
+      loginErrorMsg.style.display = "none";
+      window.location.href = "/index.html";
+    } else {
+      loginErrorMsg.innerHTML = `<span>${res.message}</span>`
+      loginErrorMsg.style.display = "block";
+    }
+  })
+
+  // sing up
+  singUpBtn.addEventListener("click", async (e) => {
+    e.preventDefault()
+    let form = document.querySelector(".signup form");
+    let jsonForm = formToObject(form);
+    let res = await post("/api/auth/register", jsonForm);
+
+    if (isOk(res)) {
+      singUpErrorMsg.style.display = "none";
+      chk.click()
+    } else {
+      singUpErrorMsg.innerHTML = `<span>${res.message}</span>`
+      singUpErrorMsg.style.display = "block";
+    }
+  })
+</script>
+</body>
+</html>
