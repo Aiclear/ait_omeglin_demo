@@ -1,4 +1,4 @@
-import {bpost, getUserInfo} from "./util.js";
+import {b_post, getUserInfo} from "./util.js";
 
 export class Chat {
 
@@ -129,7 +129,7 @@ export class Chat {
 
             let that = this;
             // 对方确认成为好友，则message为对方的user code
-            bpost("/api/user_friends/make", {
+            b_post("/api/user_friends/make", {
                 userCode: getUserInfo().code,
                 friendCode: remoteUserInfo.userCode,
             }, () => {

@@ -8,7 +8,7 @@ function formToObject(form) {
     return jsonObj
 }
 
-function bpost(url, data, ok, error) {
+function b_post(url, data, ok, error) {
     post(url, data).then(json => {
         if (isOk(json)) {
             if (ok) {
@@ -46,4 +46,4 @@ function isOk(res) {
     return res && res.code === "200"
 }
 
-export {formToObject, isOk, post, bpost, getUserInfo}
+export {formToObject, isOk, post, b_post, getUserInfo}
