@@ -2,6 +2,7 @@ package com.github.blackz;
 
 import com.github.blackz.db.entity.User;
 import com.github.blackz.db.AppHibernate;
+import com.github.blackz.db.entity.UserFriends;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Assertions;
@@ -41,5 +42,31 @@ public class TestHibernateApp {
         );
 
         Assertions.assertNotNull(user);
+    }
+
+    @Test
+    public void testUserFriendsInsert() {
+        AppHibernate.inTransaction(session -> {
+            UserFriends userFriends = new UserFriends();
+            userFriends.setUserCodeX("00000");
+            userFriends.setUserCodeY("00001");
+            userFriends.setProactiveUserCode("00000");
+            userFriends.setXToYState("0");
+            userFriends.setYToXState("0");
+            userFriends.setCreateTime(LocalDateTime.now());
+
+            session.insert(userFriends);
+        });
+
+        Assertions.assertTrue(true);
+    }
+
+    @Test
+    public void testUserFriendsSelect() {
+        UserFriends userFriends =
+            AppHibernate.fromTransaction(session -> session.get(UserFriends.class, 51));
+
+        System.out.println(userFriends);
+        Assertions.assertNotNull(userFriends);
     }
 }

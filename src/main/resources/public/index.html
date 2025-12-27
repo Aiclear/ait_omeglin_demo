@@ -45,27 +45,26 @@
 </main>
 <script type="module" src="/js/app.js"></script>
 <script type="module">
-  import {post, isOk} from '/js/util.js';
+    import {post, isOk} from '/js/util.js';
 
-  document.getElementById("logout")
-      .addEventListener("click", async () => {
+    document.getElementById("logout").addEventListener("click", async () => {
         let res = await post('/api/auth/logout');
         if (isOk(res)) {
-          localStorage.clear()
-          window.location.href = "/login.html";
+            localStorage.clear()
+            window.location.href = "/login.html";
         } else {
-          window.alert(res.message);
+            window.alert(res.message);
         }
-      });
+    });
 </script>
 <script>
-  // 查询登录用户的信息
-  document.addEventListener('DOMContentLoaded', async () => {
-    let user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      document.getElementById("username").innerText = user.username;
-    }
-  });
+    // 查询登录用户的信息
+    document.addEventListener('DOMContentLoaded', async () => {
+        let user = JSON.parse(localStorage.getItem("user"));
+        if (user) {
+            document.getElementById("username").innerText = user.username;
+        }
+    });
 </script>
 </body>
 </html>

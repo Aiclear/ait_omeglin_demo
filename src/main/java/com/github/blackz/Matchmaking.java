@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Matchmaking {
+
     private static final Logger logger = LoggerFactory.getLogger(Matchmaking.class);
     private static final ConcurrentLinkedQueue<Exchange> queue = new ConcurrentLinkedQueue<>();
 
@@ -36,9 +37,9 @@ public class Matchmaking {
     private static void pairingStart(WsContext user) {
         queue.removeIf(ex -> ex.a == user || ex.b == user); // prevent double queueing
         var exchange = queue.stream()
-                .filter(ex -> ex.b == null)
-                .findFirst()
-                .orElse(null);
+            .filter(ex -> ex.b == null)
+            .findFirst()
+            .orElse(null);
         if (exchange != null) {
             exchange.b = user;
             send(exchange.a, new Message("PARTNER_FOUND", "GO_FIRST"));
@@ -61,14 +62,15 @@ public class Matchmaking {
         if (exchange != null) {
             exchange.doneCount++;
         }
+
         queue.removeIf(ex -> ex.doneCount == 2);
     }
 
     private static Exchange findExchange(WsContext user) {
         return queue.stream()
-                .filter(ex -> user.equals(ex.a) || user.equals(ex.b))
-                .findFirst()
-                .orElse(null);
+            .filter(ex -> user.equals(ex.a) || user.equals(ex.b))
+            .findFirst()
+            .orElse(null);
     }
 
     private static void send(WsContext user, Message message) { // null safe send method
@@ -78,12 +80,14 @@ public class Matchmaking {
     }
 
     record Message(String name, String data) {
+
         public Message(String name) {
             this(name, null);
         }
     }
 
     static class Exchange {
+
         public WsContext a;
         public WsContext b;
         public int doneCount = 0;

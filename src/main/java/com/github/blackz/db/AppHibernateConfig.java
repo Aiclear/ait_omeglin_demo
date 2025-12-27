@@ -1,6 +1,7 @@
 package com.github.blackz.db;
 
 import com.github.blackz.db.entity.User;
+import com.github.blackz.db.entity.UserFriends;
 import java.util.Properties;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
@@ -26,6 +27,7 @@ public class AppHibernateConfig {
 
         configuration.setProperties(settings);
         configuration.addAnnotatedClass(User.class);
+        configuration.addAnnotatedClass(UserFriends.class);
 
         return configuration;
     }

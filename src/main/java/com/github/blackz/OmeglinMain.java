@@ -7,9 +7,9 @@ import com.github.blackz.auth.AuthHandler;
 import com.github.blackz.db.OmeglinSchema;
 import com.github.blackz.security.SecurityContext;
 import com.github.blackz.security.SecurityHandler;
+import com.github.blackz.user.UserFriendsHandler;
 import com.github.blackz.user.UserHandler;
 import io.javalin.Javalin;
-import io.javalin.http.HttpStatus;
 import io.javalin.http.staticfiles.Location;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
@@ -44,22 +44,29 @@ public class OmeglinMain {
                 });
 
                 // user
-                path("/api/user", () -> {
-                    post("/userInfo", UserHandler::queryUserInfo);
+                path("/api/user", () -> post("/userInfo", UserHandler::queryUserInfo));
+
+                // user_friends
+                path("/api/user_friends", () -> {
+                    // 成为朋友
+                    post("/make", UserFriendsHandler::makeFriend);
                 });
             });
 
             // ws
-            config.router.mount(router -> {
-                router.ws("/api/matchmaking", Matchmaking::websocket);
-            });
+            config.router.mount(router -> router.ws("/api/matchmaking", Matchmaking::websocket));
         }).exception(Exception.class, (e, context) -> {
             // 处理 token过期的异常
             if (e instanceof ExpiredJwtException) {
                 context.redirect("/login.html");
             } else {
                 log.error("An error occurred while processing the request", e);
-                context.json(ResultDto.error());
+                String contentType = context.header("Content-Type");
+                if ("application/json".equals(contentType)) {
+                    context.json(ResultDto.error());
+                } else {
+                    context.redirect("/login.html");
+                }
             }
         }).start(7070);
     }

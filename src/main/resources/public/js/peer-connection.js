@@ -13,10 +13,12 @@ export class PeerConnection {
 
     async init() { // needs to be separate from constructor because of async
         try {
-            this.localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+            this.localStream = await navigator.mediaDevices.getUserMedia(
+                {video: true, audio: true});
             this.options.onLocalMedia(this.localStream);
         } catch (error) {
-            alert("Failed to enable webcam and/or microphone, please reload the page and try again");
+            alert(
+                "Failed to enable webcam and/or microphone, please reload the page and try again");
         }
         this.setState("NOT_CONNECTED");
         this.peerConnection = this.createPeerConnection();
@@ -25,14 +27,27 @@ export class PeerConnection {
 
     createSdpExchange() { // WebSocket with listeners for exchanging SDP offers and answers
         let protocol = window.location.protocol === "https:" ? "wss" : "ws";
-        let ws = new WebSocket(`${protocol}://${window.location.host}/api/matchmaking`);
+        let ws = new WebSocket(
+            `${protocol}://${window.location.host}/api/matchmaking`);
         ws.addEventListener("message", (event) => {
             const message = JSON.parse(event.data);
             console.log("Received WebSocket message", message.name)
-            if (message.name === "PARTNER_FOUND") this.handlePartnerFound(message.data);
-            if (message.name === "SDP_OFFER") this.handleSdpOffer(JSON.parse(message.data));
-            if (message.name === "SDP_ANSWER") this.handleSdpAnswer(JSON.parse(message.data));
-            if (message.name === "SDP_ICE_CANDIDATE") this.handleIceCandidate(JSON.parse(message.data));
+            if (message.name === "PARTNER_FOUND") {
+                this.handlePartnerFound(
+                    message.data);
+            }
+            if (message.name === "SDP_OFFER") {
+                this.handleSdpOffer(
+                    JSON.parse(message.data));
+            }
+            if (message.name === "SDP_ANSWER") {
+                this.handleSdpAnswer(
+                    JSON.parse(message.data));
+            }
+            if (message.name === "SDP_ICE_CANDIDATE") {
+                this.handleIceCandidate(
+                    JSON.parse(message.data));
+            }
         });
         ws.addEventListener("close", async () => {
             while (this.sdpExchange.readyState === WebSocket.CLOSED) {
@@ -53,17 +68,20 @@ export class PeerConnection {
         conn.onicecandidate = event => {
             if (event.candidate === null) { // candidate gathering complete
                 console.log("ICE candidate gathering complete");
-                return this.sdpExchange.send(JSON.stringify({name: "PAIRING_DONE"}));
+                return this.sdpExchange.send(
+                    JSON.stringify({name: "PAIRING_DONE"}));
             }
             console.log("ICE candidate created, sending to partner");
             let candidate = JSON.stringify(event.candidate);
-            this.sdpExchange.send(JSON.stringify({name: "SDP_ICE_CANDIDATE", data: candidate}))
+            this.sdpExchange.send(
+                JSON.stringify({name: "SDP_ICE_CANDIDATE", data: candidate}))
         };
         conn.oniceconnectionstatechange = () => {
             if (conn.iceConnectionState === "connected") {
                 this.setState("CONNECTED");
                 // ice candidates can still be added after "connected" state, so we need to log this with a delay
-                setTimeout(() => console.log("WebRTC connection established"), 500);
+                setTimeout(() => console.log("WebRTC connection established"),
+                    500);
             }
         };
         conn.ondatachannel = event => { // only for the "answerer" (the one who receives the SDP offer)
@@ -86,7 +104,9 @@ export class PeerConnection {
     }
 
     sendBye() {
-        if (this.dataChannel === null) return console.log("No data channel");
+        if (this.dataChannel === null) {
+            return console.log("No data channel");
+        }
         this.dataChannel.send("BYE");
         this.disconnect("LOCAL");
     }
@@ -109,36 +129,46 @@ export class PeerConnection {
         }
         console.log("Partner found, creating SDP offer and data channel");
         this.tryHandle("PARTNER_FOUND", async () => { // only for the "offerer" (the one who sends the SDP offer)
-            this.dataChannel = this.setupDataChannel(this.peerConnection.createDataChannel("data-channel"));
-            this.localStream.getTracks().forEach(track => this.peerConnection.addTrack(track, this.localStream));
+            this.dataChannel = this.setupDataChannel(
+                this.peerConnection.createDataChannel("data-channel"));
+            this.localStream.getTracks().forEach(
+                track => this.peerConnection.addTrack(track, this.localStream));
             const offer = await this.peerConnection.createOffer();
             await this.peerConnection.setLocalDescription(offer);
-            let offerJson = JSON.stringify(this.peerConnection.localDescription);
-            this.sdpExchange.send(JSON.stringify({name: "SDP_OFFER", data: offerJson}))
+            let offerJson = JSON.stringify(
+                this.peerConnection.localDescription);
+            this.sdpExchange.send(
+                JSON.stringify({name: "SDP_OFFER", data: offerJson}))
         });
     }
 
     handleSdpOffer(offer) { // only for the "answerer" (the one who receives the SDP offer)
         this.tryHandle("SDP_OFFER", async () => {
             console.log("Received SDP offer, creating SDP answer")
-            await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-            this.localStream.getTracks().forEach(track => this.peerConnection.addTrack(track, this.localStream));
+            await this.peerConnection.setRemoteDescription(
+                new RTCSessionDescription(offer));
+            this.localStream.getTracks().forEach(
+                track => this.peerConnection.addTrack(track, this.localStream));
             const answer = await this.peerConnection.createAnswer();
             await this.peerConnection.setLocalDescription(answer);
-            let answerJson = JSON.stringify(this.peerConnection.localDescription);
-            this.sdpExchange.send(JSON.stringify({name: "SDP_ANSWER", data: answerJson}))
+            let answerJson = JSON.stringify(
+                this.peerConnection.localDescription);
+            this.sdpExchange.send(
+                JSON.stringify({name: "SDP_ANSWER", data: answerJson}))
         });
     }
 
     handleSdpAnswer(answer) { // only for the "offerer" (the one who sends the SDP offer)
         this.tryHandle("SDP_ANSWER", async () => {
-            await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            await this.peerConnection.setRemoteDescription(
+                new RTCSessionDescription(answer));
         });
     }
 
     handleIceCandidate(iceCandidate) {
         this.tryHandle("ICE_CANDIDATE", async () => {
-            await this.peerConnection.addIceCandidate(new RTCIceCandidate(iceCandidate));
+            await this.peerConnection.addIceCandidate(
+                new RTCIceCandidate(iceCandidate));
         });
     }
 
