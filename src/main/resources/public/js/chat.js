@@ -110,7 +110,7 @@ export class Chat {
             }
 
             if (!window.agreeFriend) {
-                window.agreeFriend = function (event) {
+                window.agreeFriend = function () {
                     let userInfo = getUserInfo()
                     // 不同意请求
                     that.#peerConnection.dataChannel.send(
